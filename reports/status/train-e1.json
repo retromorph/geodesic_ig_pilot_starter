@@ -1,0 +1,28 @@
+{
+  "competence": {
+    "11": true,
+    "29": true
+  },
+  "smoke": false,
+  "stage": "train-e1",
+  "status": "COMPLETE",
+  "test_metrics": {
+    "11": {
+      "accuracy": 0.9188,
+      "auroc": 0.9751319053507108,
+      "ece": 0.008627151188999399,
+      "label_pos_rate": 0.5016,
+      "nll": 0.20006104695643037,
+      "pred_pos_rate": 0.4976
+    },
+    "29": {
+      "accuracy": 0.9152,
+      "auroc": 0.9757752719387845,
+      "ece": 0.010963659889251,
+      "label_pos_rate": 0.5016,
+      "nll": 0.19772215712202815,
+      "pred_pos_rate": 0.4948
+    }
+  },
+  "written_utc": "2026-10-18T18:39:15Z"
+}

@@ -11,7 +11,9 @@ only the path varies.
 **Answer from this pilot:** no. On 240 frozen test scenes, M4 had higher error than the validation-selected comparator
 (M5): r_strong = −0.043 [−0.075, −0.015], r_all = −0.053 [−0.082, −0.028], r_weak = −0.108 [−0.170, −0.050]
 (paired scene bootstrap, 2,000 resamples). M4 was indistinguishable from M2/M3 and beat only pixel IG on
-strong-interaction pairs. All numerical checks passed. Total measured GPU time was about 0.1 A4000 GPU-hours.
+strong-interaction pairs. All numerical checks passed. The E2 decoder preflight failed (`E2_INCONCLUSIVE`), and
+full E2 was not run by design. Measured GPU time: ≈ 0.10 h for E1, 0.37 h for the E2 preflight, ≈ 0.48 h in
+total out of the 40 A4000 GPU-hour budget.
 
 The preregistration is unchanged: [`docs/PREREGISTRATION.md`](docs/PREREGISTRATION.md),
 [`configs/protocol.v1.yaml`](configs/protocol.v1.yaml) (SHA-256 `521ce0a9…0b9017`). The original starter README is

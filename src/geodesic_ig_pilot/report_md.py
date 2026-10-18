@@ -317,17 +317,91 @@ def render_report(ctx, agg: dict) -> str:
 
     w("## 7. E2 — independent validation\n")
     e2 = gc.get("e2_status") or {}
-    pre = _status(ctx, "prepare-e2")
-    w(f"- Execution status: `{gc['status']}` ({'; '.join(gc['reasons'])})")
-    if pre:
+    w(f"- **Gate C:** `{gc['status']}` — {'; '.join(gc['reasons'])}")
+    prov_p = ctx.paths.data_e2 / "e2_provenance.json"
+    pre_p = ctx.paths.metrics / "e2_preflight.json"
+    mar_p = ctx.paths.metrics / "e2_preflight_margins.json"
+    if prov_p.exists():
+        pv = json.loads(prov_p.read_text())
         w(
-            f"- prepare-e2 status: `{pre['status']}` — {_f({k: v for k, v in pre.items() if k not in ('stage',)})}"
+            f"- **Dataset / code:** FunnyBirds (visinf/funnybirds-framework @ `{pv['framework_commit'][:12]}`, "
+            f"visinf/funnybirds @ `{pv['funnybirds_commit'][:12]}`); code license {pv['code_license']}; data license: "
+            f"{pv['data_license']}. Zip members read selectively by HTTP range ({pv['zip_members']} entries indexed, "
+            f"{pv['bytes_downloaded'] / 1e6:.0f} MB fetched)."
         )
-    if e2:
         w(
-            f"- evaluate-e2 status: `{e2['status']}` — {_f({k: v for k, v in e2.items() if k not in ('stage', 'gate_c')})}"
+            f"- **Classifier:** official FunnyBirds ResNet-50 (`resnet50_final_0_checkpoint_best.pth.tar`, SHA-256 "
+            f"`{pv['resnet50_sha256'][:16]}…`, ETag {pv['ckpt_head']['ETag']}); top-1 on the 152 selected original "
+            f"test images = {pv['classifier_top1_on_selected_originals']:.3f}. Target: logit_c − logsumexp_(j≠c) logit_j."
         )
-    w("")
+        w(
+            f"- **Frozen representation for E2-M4:** torchvision ResNet-18 IMAGENET1K_V1 layer3 (SHA-256 "
+            f"`{pv['resnet18_imagenet_sha256'][:16]}…`). DINOv3 was not used (gated access)."
+        )
+    sel_p = ctx.paths.data_e2 / "e2_selection.json"
+    if sel_p.exists():
+        sl = json.loads(sel_p.read_text())
+        multi = sum(len(i["removed"]) >= 2 for i in sl["test"])
+        w(
+            f"- **Locked selection (model-blind, stream `e2`):** {len(sl['preflight'])} preflight / {len(sl['validation'])} "
+            f"validation / {len(sl['test'])} held-out test images, disjoint IDs; every pair removes 2–3 visible parts "
+            f"({multi}/{len(sl['test'])} held-out pairs are multi-part); all 2^|R| coalition renders are pre-rendered "
+            "interventions."
+        )
+    if pre_p.exists():
+        pr = json.loads(pre_p.read_text())
+        w(
+            f"- **Decoder:** compact spatial AE 256²×3 → 32²×8, {pr['ae']['n_train']} unlabeled train-split images, "
+            f"{pr['ae']['epochs']} epochs ({pr['ae']['objective']}; SHA-256 `{pr['ae']['sha256'][:16]}…`)."
+        )
+        w(
+            "\n| Preflight criterion (24 endpoints of 12 pairs) | Measured | Requirement | Pass? |\n|---|---:|---|---|"
+        )
+        w(
+            f"| Top-1 preserved after reconstruction | {pr['top1_preserved_fraction']:.3f} | ≥ 0.90 | "
+            f"{_f(pr['top1_preserved_fraction'] >= 0.9)} |"
+        )
+        w(
+            f"| Part-presence fidelity (all visible parts) | {pr['part_fidelity_fraction']:.3f} | ≥ 0.90 | "
+            f"{_f(pr['part_fidelity_fraction'] >= 0.9)} |"
+        )
+        w(f"| Pairs with both endpoints part-faithful | {pr['pairs_both_endpoints_ok']:.3f} | reported | |")
+        w(f"| Median endpoint reconstruction MSE | {pr['median_endpoint_mse']:.2e} | reported | |")
+        if mar_p.exists():
+            mg = json.loads(mar_p.read_text())
+            w(
+                f"| Median / max abs. target-margin distortion (logits) | {mg['median_abs_margin_distortion']:.3f} / "
+                f"{mg['max_abs_margin_distortion']:.3f} | reported | |"
+            )
+            w(
+                f"| Contrast sign preserved (f(x)−f(b)) / median abs. contrast change | "
+                f"{mg['contrast_sign_preserved_fraction']:.3f} / {mg['median_abs_contrast_change']:.3f} | reported | |"
+            )
+        w(
+            f"\nPart-fidelity rule (prespecified): {pr['part_fidelity_rule']}. **Preflight pass: "
+            f"{_f(pr['preflight_pass'])}** → E2 status `{e2.get('status', 'n/a')}`; preflight GPU-hours "
+            f"{pr['resources']['gpu_hours']:.3f}, peak {pr['resources']['peak_gpu_mem_gb']:.1f} GB.\n"
+        )
+        if pr.get("path_smoke"):
+            w(
+                "Exploratory path smoke on 4 preflight pairs (identical reconstructed endpoints; **not** a result, the decoder "
+                "failed preflight; AP uses tau = 0.5 only for this smoke; quadrature capped at N = 256):\n"
+            )
+            w(
+                "| scene | removed | method | AP | completeness rel. | N | sec |\n|---|---|---|---:|---:|---:|---:|"
+            )
+            for r in pr["path_smoke"]:
+                w(
+                    f"| {r['scene_id']} | {r['removed']} | {r['method']} | {_f(r['AP'])} | {r['completeness_rel']:.4f} | "
+                    f"{r['N_used']} | {r['sec']:.1f} |"
+                )
+            w("")
+    w(
+        "AP definition (coded in `external.part_ap`, to be locked on validation for a full run): rank the 5 parts by "
+        "signed grouped pixel attribution; a part is relevant iff it was removed in the baseline and restoring it alone "
+        "raises the target margin by ≥ tau on the *rendered* intervention; no relevant part → `UNDEFINED_LABEL`. "
+        "MA-GIG: `NOT_COMPARABLE_WITHIN_PILOT` (not adapted). No AP values are claimed as E2 results.\n"
+    )
 
     w("## 8. Error analysis and validity threats\n")
     w(

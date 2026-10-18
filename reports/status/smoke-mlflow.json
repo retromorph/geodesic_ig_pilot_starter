@@ -1,0 +1,19 @@
+{
+  "artifact_uri": "mlflow-artifacts:/1/8e8a2e73f5d644149ffcf560b7899cd6/artifacts",
+  "downloaded_sha256": "5c8eb4cbcd327a2df34daf38387f29bf0b3b5baeb9e916796172761147e743b1",
+  "experiment_id": "1",
+  "listed": [
+    "roundtrip/roundtrip.bin"
+  ],
+  "proxied_artifacts": true,
+  "replayed_tags": {
+    "git_commit": "76474c5f7fef54a66f22270ca9210486098b1786",
+    "protocol_sha256": "521ce0a919ea58bac42c2c4f2c369bd6842e039bce047378d5c7d7afcd0b9017"
+  },
+  "roundtrip_ok": true,
+  "run_id": "8e8a2e73f5d644149ffcf560b7899cd6",
+  "stage": "smoke-mlflow",
+  "status": "COMPLETE",
+  "uploaded_sha256": "5c8eb4cbcd327a2df34daf38387f29bf0b3b5baeb9e916796172761147e743b1",
+  "written_utc": "2026-10-18T18:37:42Z"
+}

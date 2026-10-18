@@ -18,15 +18,17 @@ Answers to the template's mechanism questions (secondary analyses, no gate):
 - **M4 versus M3.** With the validation-selected alpha = 10 the hybrid metric is dominated by the image term, and
   M4 is practically identical to the image-pullback geodesic (r_all vs M3 −0.003 [−0.0047, −0.0005]; median latent
   length 0.859 for both). On validation the representation-dominated setting (alpha = 0.1) was the *worst* M4
-  variant. The masked-reconstruction AE's pullback energy differs from the image pullback by about 1% along these
-  paths: a reconstruction-trained representation largely inherits pixel geometry.
+  variant. The M4 geodesic lowers the learned-representation energy by only ~1% relative to the latent-linear path
+  (median 0.348 vs 0.351), and the image geodesic M3 lowers it almost as much (0.349). A reconstruction-trained
+  representation largely inherits pixel geometry.
 - **Interaction strength.** The paired difference E_M4 − E_B is unrelated to the oracle interaction index (Spearman
   −0.02 overall, −0.10 within strong; both non-significant). Larger interactions did not produce larger M4 gains.
 - **Shortcut / nuisance.** When the nuisance changed, all methods gave it a similar small share (|A_n|/R ≈ 0.019–0.023).
   When it did not change, M4's path wandered slightly in n and assigned it 2.5e-4 R, which is negligible but nonzero.
   The diagnostic shortcut teacher `g_short` showed the same method ordering as the other targets.
-- **Oracle targets (diagnostic).** On the exact analytic log-odds and polynomial teachers, latent paths are again within
-  about 1% of each other, with M5 or M2 best. M4 does not win on the oracle either, so there is no "M4 loses on the CNN
+- **Oracle targets (diagnostic).** On the exact analytic log-odds, polynomial and shortcut teachers, latent paths are
+  again close: within ~2% of each other on strong pairs, and up to ~9% on the much smaller weak-pair errors. M5 or M2
+  is best on strong pairs, and M3 on weak oracle-log-odds pairs. M4 does not win on the oracle either, so there is no "M4 loses on the CNN
   but wins on the oracle" concern.
 - **Why so little separation? (EXPLORATORY, post-unblinding.)** The coalition-error metric is dominated by
   non-additivity that no complete additive attribution can remove. The best complete least-squares attribution (which

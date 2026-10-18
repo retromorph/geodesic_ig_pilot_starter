@@ -483,12 +483,18 @@ def aggregate(ctx) -> int:
         out["figures"] = make_figures(ctx, rows, table, B, paths_df, None)
     out["gate_b"] = gb
     e2 = read_status(ctx.paths, "evaluate-e2")
-    gc_status = "NOT_RUN_BY_DESIGN" if gb["status"] != "PASS" else "INCONCLUSIVE"
-    gc_reasons = (
-        ["Gate B did not pass: full E2 not run by design (sequential stop)"] if gb["status"] != "PASS" else []
-    )
-    if e2 and e2.get("gate_c"):
+    if gb["status"] != "PASS":
+        # Sequential stop: full E2 is not run when Gate B fails; the preflight outcome is reported alongside.
+        gc_status = "NOT_RUN_BY_DESIGN"
+        gc_reasons = ["Gate B did not pass: full E2 not run by design (sequential stop)"]
+        if e2:
+            gc_reasons.append(
+                f"E2 preflight/smoke status {e2['status']}: " + "; ".join(e2["gate_c"]["reasons"])
+            )
+    elif e2 and e2.get("gate_c"):
         gc_status, gc_reasons = e2["gate_c"]["status"], e2["gate_c"]["reasons"]
+    else:
+        gc_status, gc_reasons = "INCONCLUSIVE", ["E2 not executed"]
     out["gate_c"] = {"status": gc_status, "reasons": gc_reasons, "e2_status": e2}
     verdict, why = _verdict(ga["status"], gb["status"], gc_status, boot, vs_m2)
     ledger = m / "gpu_ledger.jsonl"

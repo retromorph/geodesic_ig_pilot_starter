@@ -1,0 +1,56 @@
+{
+  "gate_c": {
+    "reasons": [
+      "E2 preflight failed (decoder does not preserve endpoints/parts)",
+      "E2_INCONCLUSIVE"
+    ],
+    "status": "INCONCLUSIVE"
+  },
+  "path_smoke_summary": {
+    "ap_undefined": 4,
+    "completeness_rel_max": 0.08777941763401031,
+    "mean_AP_by_method": {
+      "M1": 0.8333333333333334,
+      "M2": 0.9166666666666666,
+      "M3": 0.9166666666666666,
+      "M4": 0.9166666666666666
+    },
+    "n_pairs": 4,
+    "note": "exploratory smoke on 4 preflight pairs; not a gate input",
+    "sec_by_method": {
+      "M1": 0.8561598658561707,
+      "M2": 1.31520676612854,
+      "M3": 21.87927359342575,
+      "M4": 48.83326458930969
+    }
+  },
+  "phase": "preflight",
+  "preflight": {
+    "ae": {
+      "epochs": 30,
+      "n_train": 5000,
+      "objective": "MSE + 0.5 L1 reconstruction, unlabeled train subset",
+      "seconds": 1043.9083149433136,
+      "sha256": "00d6d895a7772c87f76d2bb494d75011058d82f6c8ed891bc48c4646f0872a5e"
+    },
+    "median_endpoint_mse": 0.0005028810410294682,
+    "pairs_both_endpoints_ok": 0.4166666666666667,
+    "part_fidelity_fraction": 0.5,
+    "part_fidelity_rule": "reconstruction part-region SSE <= 0.5 x SSE to the toggled-part render (prespecified, not tuned)",
+    "preflight_pass": false,
+    "resources": {
+      "device": "cuda",
+      "end_utc": "2026-10-18T19:13:38Z",
+      "gpu_hours": 0.3742550987667508,
+      "oom_events": 0,
+      "peak_gpu_mem_gb": 11.523488521575928,
+      "stage": "evaluate-e2-preflight",
+      "start_utc": "2026-10-18T18:51:11Z",
+      "wall_seconds": 1347.3183555603027
+    },
+    "top1_preserved_fraction": 0.75
+  },
+  "stage": "evaluate-e2",
+  "status": "E2_INCONCLUSIVE",
+  "written_utc": "2026-10-18T19:13:39Z"
+}

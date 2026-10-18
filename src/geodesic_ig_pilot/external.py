@@ -695,6 +695,41 @@ def evaluate_e2(ctx, phase: str = "preflight", resume: bool = False, dry_run: bo
     return 0
 
 
+def endpoint_margin_distortion(ctx) -> dict:
+    """Target-margin change caused by AE reconstruction on the 24 preflight endpoints (diagnostic)."""
+    root = ctx.paths.data_e2
+    sel = json.loads((root / "e2_selection.json").read_text())
+    dev = ctx.device
+    clf = load_classifier(root / "models" / "resnet50_final_0_checkpoint_best.pth.tar", dev)
+    ae, _ = _train_ae(ctx, root, dev)  # loads the saved checkpoint; never retrains
+    rows = []
+    with torch.no_grad():
+        for it in sel["preflight"]:
+            p = _paths_for(root, it["class_idx"], it["image_idx"])
+            keep_base = [q for q in PARTS if q not in it["removed"]]
+            cls = torch.tensor([it["class_idx"]], device=dev)
+            for name, path in (("x", p["image"]), ("b", p["interventions"] / intervention_name(keep_base))):
+                img = _img(path)[None].to(dev)
+                f_o, f_r = float(class_margin(clf, img, cls)), float(class_margin(clf, ae(img), cls))
+                rows.append(
+                    {"scene_id": it["scene_id"], "endpoint": name, "f_original": f_o, "f_reconstructed": f_r}
+                )
+            rows[-2]["contrast_original"] = rows[-2]["f_original"] - rows[-1]["f_original"]
+            rows[-2]["contrast_reconstructed"] = rows[-2]["f_reconstructed"] - rows[-1]["f_reconstructed"]
+    d = np.array([abs(r["f_reconstructed"] - r["f_original"]) for r in rows])
+    co = np.array([r["contrast_original"] for r in rows if "contrast_original" in r])
+    cr = np.array([r["contrast_reconstructed"] for r in rows if "contrast_reconstructed" in r])
+    out = {
+        "rows": rows,
+        "median_abs_margin_distortion": float(np.median(d)),
+        "max_abs_margin_distortion": float(d.max()),
+        "contrast_sign_preserved_fraction": float(np.mean(np.sign(co) == np.sign(cr))),
+        "median_abs_contrast_change": float(np.median(np.abs(cr - co))),
+    }
+    atomic_write_json(ctx.paths.metrics / "e2_preflight_margins.json", out)
+    return out
+
+
 def log_e2_to_mlflow(ctx) -> str:
     """Record E2 provenance, selection, preflight results and statuses as one MLflow run (gig-pilot/e2)."""
     root = ctx.paths.data_e2

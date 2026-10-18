@@ -1,0 +1,17 @@
+{
+  "all_pass": true,
+  "mlflow_run_id": "70f5955fcf734b518ef3c52845e1f293",
+  "resources": {
+    "device": "cpu",
+    "end_utc": "2026-10-18T18:38:36Z",
+    "gpu_hours": 0.0,
+    "oom_events": 0,
+    "peak_gpu_mem_gb": 0.0,
+    "stage": "exp0",
+    "start_utc": "2026-10-18T18:37:57Z",
+    "wall_seconds": 38.42393612861633
+  },
+  "stage": "exp0",
+  "status": "COMPLETE",
+  "written_utc": "2026-10-18T18:38:36Z"
+}

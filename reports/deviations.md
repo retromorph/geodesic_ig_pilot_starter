@@ -95,3 +95,57 @@ after unblinding and are labelled as such. Nothing in Part A was changed after u
     smoke); no positives → `UNDEFINED_LABEL`. Full E2 runs only if Gate B passes (sequential stop).
 28. MA-GIG was not adapted (`NOT_COMPARABLE_WITHIN_PILOT`): no fair same-endpoint/same-score adaptation was attempted
     within the time budget. No superiority over MA-GIG is claimed.
+
+## Part B — after unblinding (appended; Part A unchanged)
+
+### B1. Timeline (UTC, 2026-10-18)
+| Time | Event |
+|---|---|
+| 18:07 | Session start; starter checksums verified; first host unreachable (Part A1) |
+| 18:33 | Replacement host reachable; inventory; uv/Python/torch install; MLflow started 18:37 |
+| 18:37–18:38 | MLflow roundtrip smoke, doctor, remote pytest (28 passed), E0 (36/36 PASS, CPU) |
+| 18:38–18:41 | prepare-e1, train-e1 (2 seeds), fit-encoder |
+| 18:41:27–18:42:29 | Validation profiling + 80-pair validation; selection; **frozen manifest written 18:42:29** |
+| ~18:44 | Part A of this file committed (`1e85d35`) |
+| **18:44:41** | **Test unblinded** (`reports/manifest/unblinding.json`); single test pass, exit 0 at ~18:46 |
+| 18:46 | First aggregation: Gate B FAIL → NO_GO |
+| 18:47–18:53 | GPU mini-run smoke (after two smoke-only failures, see B2) |
+| 18:41–18:50 | prepare-e2 (selective FunnyBirds download, run in parallel, network-bound) |
+| 18:51–19:13 | evaluate-e2 preflight: decoder failed preflight → E2_INCONCLUSIVE; full E2 not run by design |
+| 19:15–19:20 | E2 margin-distortion diagnostic, E2 MLflow record, re-aggregation, report |
+
+### B2. Deviations and reruns after unblinding
+1. **No E1 rerun.** The E1 test set was evaluated exactly once; no chunk was recomputed. No test pair, seed or method
+   row was excluded. No hyperparameter, metric, threshold, comparator or alpha was changed after unblinding.
+2. **GPU mini-run order (deviation from ENGINEERING_PLAN §5).** The plan asks for a 2-example CUDA smoke *before* the
+   full E1. The CPU 4-example smoke (laptop) ran before, but the CUDA mini-run (`--smoke`, `outputs/smoke-cuda`) ran
+   only *after* the full E1, at 18:47–18:53. The full E1 itself ran on CUDA without error, so the omission had no
+   effect on results, but the order deviates. The first two CUDA smoke attempts failed for smoke-only reasons: (a)
+   `prepare-e1 --device cpu` wrote to a different smoke output root; (b) `train-e1` returned exit 3 because the
+   2-epoch smoke classifiers are, by design, not competent. `cli.py` now treats competence as non-fatal in `--smoke`
+   mode only. Their MLflow runs remain in the `*-smoke` experiments.
+3. **Aggregation reruns** (deterministic, from saved rows; every rerun is a new MLflow run in `gig-pilot/decisions`):
+   (i) first aggregation; (ii) added the exploratory headroom bound; (iii) Gate C labelling. When Gate B fails, Gate C
+   is `NOT_RUN_BY_DESIGN` and the E2 preflight outcome (`E2_INCONCLUSIVE`) is listed as a reason. The earlier E2 code
+   path would have labelled Gate C `INCONCLUSIVE`; the verdict (`NO_GO`) is identical under both labels.
+4. **Exploratory (post-unblinding, not gate inputs):** best-additive coalition-error bounds (unconstrained and
+   completeness-constrained least squares), the eta–difference Spearman correlation, and per-method win rates.
+5. **E2 additions after the preflight ran:** (a) an MLflow record of the E2 stage (`log_e2_to_mlflow`) was added and
+   invoked after the preflight had finished; (b) the endpoint target-margin distortion required by
+   EXTERNAL_VALIDATION §1.3 had been omitted from the preflight code. It was computed afterwards on the same 24
+   endpoints with the saved decoder (no retraining), in `reports/metrics/e2_preflight_margins.json`. Neither changes
+   the preflight decision, which used only the prespecified top-1 and part-fidelity rules.
+6. **E2 preflight smoke numerics:** the exploratory path smoke capped quadrature at N = 256 (not 512). Its
+   completeness residuals reached 0.088 for some paths through the ResNet-50, so those smoke attributions are
+   *numerically incomplete*. They are reported only as a smoke and never as E2 results.
+7. **E2 decoder not iterated.** After the decoder failed preflight we did not retrain or tune it. A full E2 would
+   not have run in any case because Gate B failed, and the E2 budget is not to be spent rescuing a failed primary
+   hypothesis.
+8. `reports/metrics/` and `reports/figures/` are git-ignored by the starter `.gitignore` and were not force-added.
+   They are present in the working copy and as MLflow artifacts.
+
+### B3. Compute
+Measured GPU wall-clock (one A4000): E1 training + encoder + profiling + validation + test ≈ 0.096 h; E2 preflight
+0.374 h plus margin diagnostic; CUDA smoke ≈ 0.005 h (separate ledger `outputs/smoke-cuda`). The total is well below
+the 40 GPU-hour budget. The E1 stages used no more than 5.65 GB of allocated VRAM; the E2 preflight peaked at
+11.5 GB; there were no OOM events.
