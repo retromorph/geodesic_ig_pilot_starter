@@ -24,3 +24,4 @@ reports/metrics/
 reports/figures/
 reports/artifacts/
 # Commit only final lightweight report, gate JSON and reproducibility metadata.
+outputs/

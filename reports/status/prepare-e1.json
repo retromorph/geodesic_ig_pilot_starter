@@ -1,0 +1,61 @@
+{
+  "C": 2.2394745583776543,
+  "manifest": "<PROJECT_ROOT>/data/e1/prepare_manifest.json",
+  "mlflow_run_id": "0a6a35ebb159465a9f1e84c2d5e86d2a",
+  "pair_generation": {
+    "test": {
+      "all_quotas_filled": true,
+      "candidates_drawn": 3489,
+      "filled": {
+        "strong|nuisance_changed=False": 60,
+        "strong|nuisance_changed=True": 60,
+        "weak|nuisance_changed=False": 60,
+        "weak|nuisance_changed=True": 60
+      },
+      "max_candidates": 150000,
+      "quotas": {
+        "strong|nuisance_changed=False": 60,
+        "strong|nuisance_changed=True": 60,
+        "weak|nuisance_changed=False": 60,
+        "weak|nuisance_changed=True": 60
+      },
+      "rejections": {
+        "middle_eta": 296,
+        "quota_full": 150,
+        "same_teacher_class": 638,
+        "small_delta": 2165
+      },
+      "split": "test",
+      "stream": "pairs_test"
+    },
+    "validation": {
+      "all_quotas_filled": true,
+      "candidates_drawn": 1096,
+      "filled": {
+        "strong|nuisance_changed=False": 20,
+        "strong|nuisance_changed=True": 20,
+        "weak|nuisance_changed=False": 20,
+        "weak|nuisance_changed=True": 20
+      },
+      "max_candidates": 50000,
+      "quotas": {
+        "strong|nuisance_changed=False": 20,
+        "strong|nuisance_changed=True": 20,
+        "weak|nuisance_changed=False": 20,
+        "weak|nuisance_changed=True": 20
+      },
+      "rejections": {
+        "middle_eta": 106,
+        "quota_full": 34,
+        "same_teacher_class": 195,
+        "small_delta": 681
+      },
+      "split": "validation",
+      "stream": "pairs_validation"
+    }
+  },
+  "smoke": false,
+  "stage": "prepare-e1",
+  "status": "COMPLETE",
+  "written_utc": "2026-10-18T18:37:58Z"
+}

@@ -1,0 +1,35 @@
+{
+  "cuda_available": true,
+  "cuda_matmul_ok": true,
+  "cudnn_version": 91002,
+  "disk_free_gb": 113.09775161743164,
+  "expected": {
+    "classifier_seeds": [
+      11,
+      29
+    ],
+    "test_pairs": 240,
+    "validation_pairs": 80
+  },
+  "gpu_hours_remaining": 39.92796161936389,
+  "gpu_hours_used": 0.07203838063610925,
+  "gpu_total_vram_gb": 15.6016845703125,
+  "mlflow_disabled": false,
+  "mlflow_health": "OK",
+  "mlflow_uri": "http://127.0.0.1:5000",
+  "provenance": {
+    "cuda_driver": "595.71.05",
+    "git_commit": "76474c5f7fef54a66f22270ca9210486098b1786",
+    "git_dirty": "True",
+    "gpu_name": "NVIDIA RTX A4000",
+    "host": "host-d4c9dc311c29",
+    "platform": "Linux-7.0.0-15-generic-x86_64-with-glibc2.43",
+    "preregistration_sha256": "73e0665bc1d831984935921780c2223c1dd79b423be01dab5ff31be8ff73927b",
+    "protocol_sha256": "521ce0a919ea58bac42c2c4f2c369bd6842e039bce047378d5c7d7afcd0b9017",
+    "python": "3.11.13",
+    "pytorch_cuda": "12.6",
+    "source_sha256": "0a390006a0bc088d921377532fd3a9a2991adb6abd361118f1c91fbc223aee76",
+    "torch": "2.14.1+cu126",
+    "uv_lock_sha256": "44a2e38747550f63fcb378b0ae08800bc92c6c768946e0333d28dfd04ad580ae"
+  }
+}

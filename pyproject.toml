@@ -1,0 +1,59 @@
+[project]
+name = "geodesic-ig-pilot"
+version = "0.1.0"
+description = "Preregistered go/no-go pilot for semantic/manifold geodesic Integrated Gradients"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "pyyaml>=6.0",
+  "pandas>=2.1",
+  "pyarrow>=15",
+  "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+  "pillow>=10",
+  "mlflow>=2.14",
+  "torch>=2.4",
+  "torchvision>=0.19",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+gig-pilot = "geodesic_ig_pilot.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/geodesic_ig_pilot"]
+
+# CUDA wheels on the Linux GPU host; PyPI (CPU/MPS) wheels on macOS for local CPU tests.
+# Index chosen after checking the remote driver (see reports/reproducibility.md).
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu126", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cu126", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E741", "B905"]
+
+[tool.ruff.lint.pycodestyle]
+# Formatter wraps code at 110; long report f-strings may run to 140.
+max-line-length = 140
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

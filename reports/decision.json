@@ -1,0 +1,79 @@
+{
+  "e1_test_errors": {
+    "ci_all": [
+      -0.0821139779526919,
+      -0.027764948972626814
+    ],
+    "ci_strong": [
+      -0.07487882782672632,
+      -0.015169459515604403
+    ],
+    "ci_weak": [
+      -0.16961364799912823,
+      -0.05000423774077175
+    ],
+    "mean_E_b_all": 0.008152761786469155,
+    "mean_E_b_strong": 0.013897757856079569,
+    "mean_E_b_weak": 0.0024077657168587404,
+    "mean_E_m4_all": 0.008581306600203911,
+    "mean_E_m4_strong": 0.014493705412615713,
+    "mean_E_m4_weak": 0.002668907787792109,
+    "r_all": -0.05256437327115293,
+    "r_strong": -0.042880841838487394,
+    "r_weak": -0.10845825617704374
+  },
+  "gate_a": {
+    "reasons": [],
+    "status": "PASS"
+  },
+  "gate_b": {
+    "reasons": [
+      "r_strong: -0.042880841838487394 (rule >= 0.15) -> FAIL",
+      "r_strong_ci_lower: -0.07487882782672632 (rule > 0.05) -> FAIL",
+      "r_all: -0.05256437327115293 (rule >= 0.1) -> FAIL",
+      "r_all_ci_lower: -0.0821139779526919 (rule > 0.0) -> FAIL",
+      "r_weak: -0.10845825617704374 (rule >= -0.05) -> FAIL",
+      "seed_11_strong_reduction: -0.046331506327742966 (rule > 0) -> FAIL",
+      "seed_29_strong_reduction: -0.03656881673831203 (rule > 0) -> FAIL",
+      "learned_non_oracle_encoder: True (rule == True) -> pass",
+      "classifiers_competent: True (rule == True) -> pass",
+      "nonflat_fraction>=0.98: True (rule == True) -> pass",
+      "no_scene_leakage: True (rule == True) -> pass",
+      "gate_a_pass: True (rule == True) -> pass",
+      "test_population_complete: True (rule == True) -> pass"
+    ],
+    "status": "FAIL"
+  },
+  "gate_c": {
+    "reasons": [
+      "Gate B did not pass: full E2 not run by design (sequential stop)",
+      "E2 preflight/smoke status E2_INCONCLUSIVE: E2 preflight failed (decoder does not preserve endpoints/parts); E2_INCONCLUSIVE"
+    ],
+    "status": "NOT_RUN_BY_DESIGN"
+  },
+  "mlflow_experiment_ids": {
+    "gig-pilot/decisions": "6",
+    "gig-pilot/decisions-smoke": "10",
+    "gig-pilot/e0": "2",
+    "gig-pilot/e1-data": "3",
+    "gig-pilot/e1-data-smoke": "7",
+    "gig-pilot/e1-models": "4",
+    "gig-pilot/e1-models-smoke": "8",
+    "gig-pilot/e1-paths": "5",
+    "gig-pilot/e1-paths-smoke": "9",
+    "gig-pilot/e2": "11",
+    "gig-pilot/smoke": "1"
+  },
+  "protocol_sha256": "521ce0a919ea58bac42c2c4f2c369bd6842e039bce047378d5c7d7afcd0b9017",
+  "protocol_version": "1.0",
+  "report_generated_utc": "2026-10-18T19:16:04Z",
+  "selected_comparator": "M5",
+  "selected_m4_alpha": 10.0,
+  "total_gpu_hours": 0.47088025377856363,
+  "verdict": "NO_GO",
+  "verdict_reasons": [
+    "mean relative error reduction below 0.05 (protocol no_go_if_e1_mean_gain_below)",
+    "no strong-stratum advantage over decoded latent-linear IG (M2)",
+    "Gate B failed"
+  ]
+}

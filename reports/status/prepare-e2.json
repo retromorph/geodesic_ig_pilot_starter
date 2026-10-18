@@ -1,0 +1,24 @@
+{
+  "bytes_downloaded": 968718842,
+  "ckpt_head": {
+    "Accept-Ranges": "bytes",
+    "Content-Length": "189249661",
+    "ETag": "\"64ccc879-b47b87d\"",
+    "Last-Modified": "Fri, 04 Aug 2023 09:44:25 GMT"
+  },
+  "classifier_top1_on_selected_originals": 1.0,
+  "code_license": "Apache-2.0 (both repositories)",
+  "data_license": "none published; repository Apache-2.0 (inference, recorded limitation)",
+  "framework_commit": "1350bbe812ff18df25b2708df861245b9a63b9c9",
+  "funnybirds_commit": "91b4b4628ffa962148144ee6bb5af5f022cac2f8",
+  "n_train_images": 5000,
+  "resnet18_hash_prefix_matches_filename": true,
+  "resnet18_imagenet_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+  "resnet50_sha256": "88f0fcf517ab5aa318325db7ffef46d65b52f0b8e18c325f5280d97f631ad139",
+  "seconds": 498.7621502876282,
+  "selection_sha256": "775800cfa9dbbef12a716913e5e16ead76c6c3a9ae087f55b8e018c9963e4d1c",
+  "stage": "prepare-e2",
+  "status": "COMPLETE",
+  "written_utc": "2026-10-18T18:50:11Z",
+  "zip_members": 126887
+}
