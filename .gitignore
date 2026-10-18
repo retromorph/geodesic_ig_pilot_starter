@@ -1,0 +1,26 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.env
+.env.*
+!.env.example
+mlruns/
+logs/
+checkpoints/
+data/
+datasets/
+downloads/
+.cache/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.tar
+*.zip
+reports/metrics/
+reports/figures/
+reports/artifacts/
+# Commit only final lightweight report, gate JSON and reproducibility metadata.

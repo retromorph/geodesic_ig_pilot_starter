@@ -1,0 +1,147 @@
+protocol:
+  id: geodesic_ig_go_no_go
+  version: '1.0'
+  date: '2026-10-18'
+  status: preregistered_starting_point
+  fixed_after_first_heldout_evaluation: true
+  reference_docs:
+    - docs/RESEARCH_SPEC.md
+    - docs/PREREGISTRATION.md
+
+environment:
+  python: '3.11'
+  package_manager: uv
+  gpu_expected: 'NVIDIA RTX A4000'
+  vram_gb: 16
+  min_headroom_gb: 1.5
+  mlflow_tracking_uri: 'http://127.0.0.1:5000'
+  mlflow_backend: sqlite
+  mlflow_artifacts: proxied_local
+  run_long_jobs_in_tmux: true
+  security:
+    bind_mlflow_loopback_only: true
+    public_port_5000_allowed: false
+    automatic_firewall_changes_allowed: false
+
+budget:
+  total_gpu_hours: 40.0
+  e1_gpu_hours: 28.0
+  e2_gpu_hours: 10.0
+  smoke_and_profile_gpu_hours: 2.0
+
+e0:
+  curvature_c: [0.0, 1.0, 4.0]
+  expected_u_attribution: [0.5, 0.426372930526833, 0.352099127183979]
+  expected_v_attribution: [0.5, 0.573627069473167, 0.647900872816021]
+  absolute_tolerance: 0.001
+  additive_invariance_tolerance: 0.001
+  optimize_geodesic_numerically: true
+
+e1:
+  image_shape: [3, 64, 64]
+  factors: [a, b, c, n]
+  predictive_factors: [a, b, c]
+  nuisance_factors: [n]
+  calibration_draw_size: 20000
+  labels:
+    teacher: nonlinear_g_nl
+    conditional_probability: sigmoid_3_times_g_nl
+    contrast_pair_selection: opposite_signs_g_nl
+  train_samples_per_seed: 10000
+  classifier_seeds: [11, 29]
+  generator_seed: 20261018
+  max_candidate_pairs: 200000
+  min_changed_predictive_factors: 2
+  min_factor_delta: 0.15
+  nuisance_changed_fraction_target: 0.50
+  nuisance_changed_min_delta: 0.15
+  validation_pairs: 80
+  test_pairs_strong: 120
+  test_pairs_weak: 120
+  interaction_index:
+    strong_min: 0.25
+    weak_max: 0.05
+    numerator: sum_abs_pairwise_oracle_difference_in_differences
+    denominator: oracle_coalition_score_range_plus_1e-8
+  methods:
+    M1: pixel_linear_ig
+    M2: decoded_latent_linear_ig
+    M3: image_pullback_geodesic_ig
+    M4: independent_representation_pullback_geodesic_ig
+    M5: random_smooth_latent_paths_mean_ig
+  primary_target: cnn_logit_1_minus_logit_0
+  diagnostic_targets: [oracle_nonlinear_log_odds, oracle_polynomial_score]
+  semantic_encoder: train_only_unlabeled_independent
+  oracle_encoder_primary_gate_eligible: false
+  path:
+    initial_segments: 16
+    initial_quadrature_steps: 64
+    allowed_quadrature_steps: [64, 128, 256, 512]
+    optimizer: adam
+    optimizer_iterations_initial: 100
+    restart_count: 3
+    endpoint_fixed: true
+    comparator_selection: min_equal_stratum_validation_error
+    alpha_validation_grid: [0.1, 1.0, 10.0]
+    epsilon_positive_required: true
+  profiling:
+    validation_pair_count: 10
+  competence:
+    min_auroc: 0.90
+    min_accuracy: 0.83
+    min_fraction_nonflat_pair_scores: 0.98
+    model_flat_range_floor: 0.001
+  gate_a:
+    analytic_max_absolute_error: 0.001
+    additive_max_absolute_difference: 0.001
+    completeness_median_relative_max: 0.005
+    completeness_p95_relative_max: 0.02
+    relative_denominator: coalition_range_plus_1e-8
+    latent_domain_valid_fraction_min: 0.98
+  metrics:
+    primary: normalized_full_coalition_mse
+    denominator_eps: 1.0e-8
+    negligible_baseline_mean_error: 1.0e-6
+    exact_shapley_reference: true
+  statistics:
+    resample_unit: scene_id
+    average_classifier_seeds_within_scene: true
+    bootstrap_seed: 9001
+    bootstrap_samples: 2000
+    confidence_level: 0.95
+  gate_b:
+    strong_mean_relative_reduction_min: 0.15
+    strong_bootstrap_lower_bound_gt: 0.05
+    all_mean_relative_reduction_min: 0.10
+    all_bootstrap_lower_bound_gt: 0.0
+    weak_relative_reduction_min: -0.05
+    positive_strong_improvement_both_classifier_seeds: true
+    require_learned_non_oracle_encoder: true
+
+e2:
+  dataset_preference: FunnyBirds
+  external_paper_url: 'https://openaccess.thecvf.com/content/ICCV2023/html/Hesse_FunnyBirds_A_Synthetic_Vision_Dataset_for_a_Part-Based_Analysis_of_ICCV_2023_paper.html'
+  checkpoint_preference: pretrained_resnet50
+  preflight_pairs: 12
+  validation_pairs: 20
+  test_pairs_target: 120
+  require_two_changed_parts_for_primary: true
+  require_independent_part_preservation_check: true
+  preflight_top1_preservation_fraction_min: 0.90
+  preflight_part_fidelity_fraction_min: 0.90
+  requires_successful_gate_b_for_full_run: true
+  primary_metric: fixed_validation_definition_part_average_precision
+  primary_comparison: M4_minus_strongest_matched_endpoints_validation_baseline
+  gate_c:
+    absolute_part_ap_improvement_min: 0.03
+    paired_bootstrap_lower_bound_gt: 0.0
+    require_valid_differentiable_decoder: true
+    require_endpoint_matching: true
+
+final_decision:
+  go_requires: [A, B, C]
+  amber_is_authorization_to_scale_up: false
+  no_go_if_e1_mean_gain_below: 0.05
+  no_go_if_oracle_encoder_only: true
+  blocked_if_numeric_or_infrastructure_invalid: true
+  honest_negative_result_required: true
