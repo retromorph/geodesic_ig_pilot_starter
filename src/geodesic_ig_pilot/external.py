@@ -695,6 +695,30 @@ def evaluate_e2(ctx, phase: str = "preflight", resume: bool = False, dry_run: bo
     return 0
 
 
+def log_e2_to_mlflow(ctx) -> str:
+    """Record E2 provenance, selection, preflight results and statuses as one MLflow run (gig-pilot/e2)."""
+    root = ctx.paths.data_e2
+    status = json.loads((ctx.paths.status / "evaluate-e2.json").read_text())
+    with ctx.tracker.run(
+        ctx.exp("e2"),
+        "e2-preflight",
+        tags={"stage": "evaluate-e2", "split": "preflight", "e2_status": status["status"]},
+    ) as run:
+        pre = status.get("preflight", {})
+        ctx.tracker.log_metrics({k: float(v) for k, v in pre.items() if isinstance(v, (int, float))})
+        for f in (
+            root / "e2_provenance.json",
+            root / "e2_selection.json",
+            ctx.paths.metrics / "e2_preflight.json",
+            ctx.paths.status / "prepare-e2.json",
+            ctx.paths.status / "evaluate-e2.json",
+            root / "models" / "e2_spatial_ae.json",
+        ):
+            if f.exists():
+                ctx.tracker.log_artifact(f, "e2")
+        return run.info.run_id
+
+
 def _smoke_summary(rows: list[dict]) -> dict:
     if not rows:
         return {}

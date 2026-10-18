@@ -143,6 +143,55 @@ def nuisance_table(rows: pd.DataFrame) -> pd.DataFrame:
     return t.reset_index()
 
 
+def exploratory_headroom(rows: pd.DataFrame, coal: pd.DataFrame, seeds: list[int]) -> dict:
+    """EXPLORATORY (post-unblinding, not a gate input): best achievable coalition error.
+
+    For each scene-seed game, the least-squares additive attribution (unconstrained) and the
+    least-squares attribution subject to completeness (sum A = Delta_M) bound from below the error
+    any complete path method can reach. Reported per stratum next to Shapley and every method.
+    """
+    from .evaluations import DENOM_EPS, coalition_masks
+
+    recs = []
+    meta = rows.drop_duplicates("scene_id").set_index("scene_id")
+    for sid, g in coal.groupby("scene_id"):
+        g = g.sort_values("subset_mask")
+        m = int(round(np.log2(len(g))))
+        M = coalition_masks(m).astype(float)
+        for seed in seeds:
+            v = g[f"f_seed{seed}"].to_numpy()
+            d = v - v[0]
+            R = v.max() - v.min()
+            a_ls, *_ = np.linalg.lstsq(M, d, rcond=None)
+            K = np.block([[M.T @ M, np.ones((m, 1))], [np.ones((1, m)), np.zeros((1, 1))]])
+            sol = np.linalg.solve(K, np.concatenate([M.T @ d, [d[-1]]]))
+            for name, a in (("LS_unconstrained", a_ls), ("LS_complete", sol[:m])):
+                recs.append(
+                    {
+                        "scene_id": sid,
+                        "seed": seed,
+                        "stratum": meta.loc[sid, "stratum"],
+                        "bound": name,
+                        "E": float(np.mean(((d - M @ a) / (R + DENOM_EPS)) ** 2)),
+                    }
+                )
+    b = pd.DataFrame(recs).groupby(["bound", "stratum"])["E"].mean().unstack()
+    use = rows[~rows["model_flat"]]
+    meth = use.groupby(["method", "stratum"])["E_coal"].mean().unstack()
+    shap = use[use["method"] == use["method"].iloc[0]].groupby("stratum")["E_coal_shapley"].mean()
+    out = {
+        "bounds": b.reset_index().to_dict(orient="records"),
+        "shapley": shap.to_dict(),
+        "methods": meth.reset_index().to_dict(orient="records"),
+    }
+    lo = b.loc["LS_complete"]
+    out["headroom_fraction_vs_method"] = {
+        mm: {st: float((meth.loc[mm, st] - lo[st]) / meth.loc[mm, st]) for st in ("strong", "weak")}
+        for mm in meth.index
+    }
+    return out
+
+
 def make_figures(ctx, rows, table, comparator, paths_df, coal) -> list[str]:
     import matplotlib
 
@@ -426,6 +475,11 @@ def aggregate(ctx) -> int:
                 .describe()
                 .to_dict(),
             }
+        coal_p = m / "e1_test_coalitions.parquet"
+        if coal_p.exists():
+            out["exploratory_headroom"] = exploratory_headroom(
+                rows, pd.read_parquet(coal_p), list(prot.get("e1", "classifier_seeds"))
+            )
         out["figures"] = make_figures(ctx, rows, table, B, paths_df, None)
     out["gate_b"] = gb
     e2 = read_status(ctx.paths, "evaluate-e2")

@@ -192,7 +192,8 @@ def cmd_train_e1(args) -> int:
     from .e1 import train_e1
 
     res = train_e1(_ctx(args), resume=args.resume, dry_run=args.dry_run)
-    return 0 if args.dry_run or all(r["competent"] for r in res.values()) else 3
+    # Competence failure is fatal (exit 3) for real runs; smoke models are tiny and only logged.
+    return 0 if args.dry_run or args.smoke or all(r["competent"] for r in res.values()) else 3
 
 
 def cmd_fit_encoder(args) -> int:

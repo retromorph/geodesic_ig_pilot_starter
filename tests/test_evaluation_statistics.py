@@ -209,3 +209,21 @@ def test_tracker_refuses_non_loopback(monkeypatch):
     monkeypatch.setenv("MLFLOW_TRACKING_URI", "http://0.0.0.0:5000")
     with pytest.raises(RuntimeError):
         Tracker(load_protocol(PROTO))
+
+
+def test_part_ap_definition_hand_check():
+    from geodesic_ig_pilot.external import part_ap, part_masks
+
+    A = {"beak": 3.0, "eye": 0.1, "foot": 2.0, "tail": -1.0, "wing": 0.0}
+    # removed parts beak, tail; only beak's single-part restoration effect exceeds tau
+    assert part_ap(A, {"beak": 1.0, "tail": 0.2}, tau=0.5) == 1.0
+    # tail relevant but ranked last (5th of 5) -> AP = 1/5
+    assert part_ap(A, {"beak": 0.1, "tail": 0.9}, tau=0.5) == 0.2
+    assert part_ap(A, {"beak": 0.1}, tau=0.5) is None  # UNDEFINED_LABEL
+    # part masks form a partition with the framework's colour code
+    pm = np.zeros((16, 16, 3), dtype=np.int32)
+    pm[2:4, 2:4] = (255, 255, 0)  # beak
+    pm[8:12, 8:12] = (170, 170, 170)  # body
+    m = part_masks(pm)
+    total = sum(v.astype(int) for v in m.values())
+    assert (total == 1).all() and m["beak"].sum() >= 4 and m["body"].any() and m["background"].any()

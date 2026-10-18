@@ -298,6 +298,22 @@ def render_report(ctx, agg: dict) -> str:
             w(f"| {r['method']} | {_f(r.get('nuisance_unchanged'))} | {_f(r.get('nuisance_changed'))} |")
     if agg.get("paths"):
         w(f"\nPath diagnostics: {_f(agg['paths'])}\n")
+    hr = agg.get("exploratory_headroom")
+    if hr:
+        w(
+            "\n**EXPLORATORY (post-unblinding; not a gate input).** Lower bounds on the coalition error of any additive "
+            "attribution for the same CNN games (scene-seed means):\n"
+        )
+        w("| quantity | strong | weak |\n|---|---:|---:|")
+        for r in hr["bounds"]:
+            w(f"| best additive A ({r['bound']}) | {_f(r.get('strong'))} | {_f(r.get('weak'))} |")
+        w(f"| exact Shapley | {_f(hr['shapley'].get('strong'))} | {_f(hr['shapley'].get('weak'))} |")
+        for r in hr["methods"]:
+            w(f"| {r['method']} | {_f(r.get('strong'))} | {_f(r.get('weak'))} |")
+        w(
+            "\nFraction of each method's error that is reducible at all by a complete additive attribution "
+            f"(1 − bound/method): {_f(hr['headroom_fraction_vs_method'])}\n"
+        )
 
     w("## 7. E2 — independent validation\n")
     e2 = gc.get("e2_status") or {}
